@@ -1,71 +1,72 @@
-import java.util.*;
-
 public class Main {
-    public static boolean check = false;
-    public static int count = 1;
+    static final int size = 10000000;
+    static final int h = size / 2;
+
+
+
+    public static class MyRunnable implements Runnable {
+        @Override
+        public void run() {
+        }
+    }
+
 
 
     public static void main(String[] args) {
-        Phonebook phonebook = new Phonebook();
-        phonebook.add("Smirnov", "899212312331");
-        phonebook.add("Smirnov", "899831231231");
-        phonebook.add("Kotov", "8992123123123");
-        phonebook.add("Belousov", "89961231411");
-        phonebook.add("Smirnov", "899232131231");
-        phonebook.add("Belyaev", "8996123412312");
+        arr();
+        arr1();
+    }
 
 
-        phonebook.get("Smirnov");
-        phonebook.get("Kotov");
-        phonebook.get("Belyaev");
-
-
-
-        ArrayList<String> arrayList= new ArrayList<>();
-        arrayList.add("Дом");
-        arrayList.add("Кот");
-        arrayList.add("Машина");
-        arrayList.add("Собака");
-        arrayList.add("Дом");
-        arrayList.add("Дом");
-        arrayList.add("Машина");
-        arrayList.add("Самолет");
-        arrayList.add("Дом");
-        arrayList.add("Самолет");
-        arrayList.add("Дом");
-        arrayList.add("Стол");
-        arrayList.add("Стул");
-        arrayList.add("Стул");
-        arrayList.add("Дом");
-        Collections.sort(arrayList);
-
-        for (int i = 1;i < arrayList.size();i++) {
-            if (i == 1) {
-                System.out.print(arrayList.get(1) + " ");
-            }
-
-            if (!arrayList.get(i).equals(arrayList.get(i - 1))) {
-                System.out.println(" Встречается " + count + " раз/раза");
-                System.out.print(arrayList.get(i));
-                check = true;
-            }
-            if (arrayList.get(i).equals(arrayList.get(i - 1))) {
-                check = false;
-            }
-            if (!check) {
-                count = count + 1;
-            }
-            if (check) {
-                count = 1;
-                check = false;
-            }
-            if (i + 1 == arrayList.size()) {
-                System.out.println(" Встречается " + count + " раз/раза");
-            }
+    public static void arr (){
+        float[] arr = new float[size];
+        for(int i = 0; i< size;i++){
+            arr[i] = 1;
         }
+
+        long a = System.currentTimeMillis();
+        for (int i = 0; i < size; i++){
+            arr[i] = (float)(arr[i] * Math.sin(0.2f + i / 5) * Math.cos(0.2f + i / 5) * Math.cos(0.4f + i / 2));
+        }
+
+        System.out.println(System.currentTimeMillis() - a);
+
+    }
+
+    public static void arr1(){
+        float[] arr = new float[size];
+        float [] arr1 = new float[h];
+        float [] arr2 = new float[h];
+        for (int i = 0; i < size; i++) {
+            arr[i] = 1;
+        }
+
+        long a = System.currentTimeMillis();
+        System.arraycopy(arr, 0 , arr1, 0, h);
+        System.arraycopy(arr, h, arr2,0, h);
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < h; i++) {
+                    arr[i] = (float)(arr[i] * Math.sin(0.2f + i / 5) * Math.cos(0.2f + i / 5) * Math.cos(0.4f + i / 2));
+                }
+            }
+        });
+        Thread thread2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < h; i++) {
+                    arr[i] = (float)(arr[i] * Math.sin(0.2f + i / 5) * Math.cos(0.2f + i / 5) * Math.cos(0.4f + i / 2));
+                }
+            }
+        });
+        thread1.start();
+        thread2.start();
+        System.arraycopy(arr, 0 ,arr1, 0 ,h);
+        System.arraycopy(arr,h,arr2,0,h);
+        System.out.println(System.currentTimeMillis() - a);
 
     }
 
 }
-
 
