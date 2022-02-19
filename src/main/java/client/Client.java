@@ -1,21 +1,19 @@
-import javax.swing.*;
+package client;
+
+import commonconstants.CommonConstants;
+import server.ServerCommandConstants;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.Scanner;
 
 public class Client {
-    private final static String SERVER_ADDRESS = "localhost";
-    private final static int SERVER_PORT = 8080;
-
     private Socket socket;
-    private DataInputStream in;
-    private DataOutputStream out;
+    private DataInputStream inputStream;
+    private DataOutputStream outputStream;
     private Scanner scanner;
-
 
     public Client() {
         scanner = new Scanner(System.in);
@@ -26,38 +24,33 @@ public class Client {
         }
     }
 
-    public void openConnection() throws IOException {
-        socket = new Socket(SERVER_ADDRESS, SERVER_PORT);
-        in = new DataInputStream(socket.getInputStream());
-        out = new DataOutputStream(socket.getOutputStream());
+    private void openConnection() throws IOException {
+        initializeNetwork();
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     while (true) {
-                        String messageFromServer = in.readUTF();
+                        String messageFromServer = inputStream.readUTF();
                         System.out.println(messageFromServer);
-                        if(messageFromServer.equals("/end")) {
-                            break;
-                        }
-
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (IOException exception) {
+                    exception.printStackTrace();
                 }
             }
         }).start();
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     while (true) {
                         String text = scanner.nextLine();
-                        if(text.equals("/end")) {
+                        if(text.equals(ServerCommandConstants.SHUTDOWN)) {
                             sendMessage(text);
                             closeConnection();
                         } else {
-                            sendMessage("Client: " + text);
+                            sendMessage(text);
                         }
                     }
                 } catch (Exception e) {
@@ -67,33 +60,35 @@ public class Client {
         }).start();
     }
 
+    private void initializeNetwork() throws IOException {
+        socket = new Socket(CommonConstants.SERVER_ADDRESS, CommonConstants.SERVER_PORT);
+        inputStream = new DataInputStream(socket.getInputStream());
+        outputStream = new DataOutputStream(socket.getOutputStream());
+    }
 
-    public void closeConnection() {
+
+    public void sendMessage(String message) {
         try {
-            out.writeUTF("/end");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                in.close();
-                out.close();
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            outputStream.writeUTF(message);
+        } catch (IOException exception) {
+            exception.printStackTrace();
         }
     }
 
-    public void sendMessage(String text) {
+    private void closeConnection() {
         try {
-            out.writeUTF(text);
-        } catch (IOException e) {
-            e.printStackTrace();
+            outputStream.close();
+            inputStream.close();
+            socket.close();
+        } catch (IOException exception) {
+            exception.printStackTrace();
         }
+
+        System.exit(1);
     }
+
 
     public static void main(String[] args) {
         new Client();
     }
 }
-
